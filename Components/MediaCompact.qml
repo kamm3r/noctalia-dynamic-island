@@ -12,13 +12,12 @@ Item {
   property real barFontSize: 12
   property bool showVisualizer: false
   property bool scrollTitle: true
-  property real capsuleHeight: 36
   property bool hasMedia: false
   property bool isPlaying: false
 
   anchors.fill: parent
 
-  readonly property real artSize: Math.round(capsuleHeight * 0.72)
+  readonly property real artSize: Math.round(height * 0.75)
   readonly property real visualizerWidth: 24
 
   RowLayout {
@@ -46,21 +45,23 @@ Item {
 
     Item {
       Layout.fillWidth: true
-      Layout.preferredHeight: root.capsuleHeight
+      Layout.preferredHeight: parent.height
       Layout.alignment: Qt.AlignVCenter
       clip: true
 
       NScrollText {
         id: scrollTitle
-        anchors.fill: parent
+        anchors.verticalCenter: parent.verticalCenter
+        width: parent.width
+        height: parent.height
 
         text: MediaService.trackTitle || "Unknown"
         scrollMode: root.scrollTitle ? NScrollText.ScrollMode.Always : NScrollText.ScrollMode.Never
-        maxWidth: parent.width
+        maxWidth: width
         gradientColor: Color.mSurface
         gradientWidth: 6
         waitBeforeScrolling: 2000
-        scrollCycleDuration: Math.max(5000, text.length * 80)
+        scrollCycleDuration: Math.max(10000, text.length * 150)
 
         NText {
           color: Color.mOnSurface

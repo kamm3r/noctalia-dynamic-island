@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Shapes
 import Quickshell
 import qs.Commons
 import qs.Widgets
@@ -90,22 +89,54 @@ Item {
     }
   }
 
-  IslandShape {
-    anchors.fill: parent
-    islandWidth: root.implicitWidth
-    islandHeight: root.implicitHeight
-    fillColor: Color.mSurface
-    borderColor: root.isHovered ? Color.mPrimary : Color.mOutline
-    borderWidth: 1
-  }
+  Rectangle {
+    id: visualCapsule
+    width: root.implicitWidth
+    height: root.implicitHeight
+    x: Style.pixelAlignCenter(parent.width, width)
+    y: Style.pixelAlignCenter(parent.height, height)
 
-  Loader {
-    id: contentLoader
-    anchors.fill: parent
-    anchors.leftMargin: 8
-    anchors.rightMargin: 8
-    active: hasMedia || showContent
-    sourceComponent: mediaCompactComponent
+    radius: Style.radiusL
+    color: root.isHovered ? Color.mHover : Color.mSurface
+    border.color: root.isHovered ? Color.mPrimary : Color.mOutline
+    border.width: Style.capsuleBorderWidth
+
+    Behavior on width {
+      enabled: root.visible || root.isMorphingOut
+      NumberAnimation {
+        duration: 300
+        easing.type: Easing.Bezier
+        easing.bezierCurve: [0.4, 0, 0.2, 1]
+      }
+    }
+
+    Behavior on height {
+      enabled: root.visible || root.isMorphingOut
+      NumberAnimation {
+        duration: 300
+        easing.type: Easing.Bezier
+        easing.bezierCurve: [0.4, 0, 0.2, 1]
+      }
+    }
+
+    Behavior on color {
+      enabled: !Color.isTransitioning
+      ColorAnimation {
+        duration: Style.animationFast
+        easing.type: Easing.InOutQuad
+      }
+    }
+
+    Loader {
+      id: contentLoader
+      anchors.fill: parent
+      anchors.leftMargin: 10
+      anchors.rightMargin: 10
+      anchors.topMargin: 4
+      anchors.bottomMargin: 4
+      active: hasMedia || showContent
+      sourceComponent: mediaCompactComponent
+    }
   }
 
   Component {
@@ -115,7 +146,6 @@ Item {
       barFontSize: root.barFontSize
       showVisualizer: root.showVisualizer && root.isPlaying
       scrollTitle: root.scrollTitle
-      capsuleHeight: root.capsuleHeight
       hasMedia: root.hasMedia || root.showContent
       isPlaying: root.isPlaying
     }
@@ -149,24 +179,6 @@ Item {
     repeat: false
     onTriggered: {
       pluginApi?.openPanel(root.screen, root)
-    }
-  }
-
-  Behavior on implicitWidth {
-    enabled: root.visible || isMorphingOut
-    NumberAnimation {
-      duration: 300
-      easing.type: Easing.Bezier
-      easing.bezierCurve: [0.4, 0, 0.2, 1]
-    }
-  }
-
-  Behavior on implicitHeight {
-    enabled: root.visible || isMorphingOut
-    NumberAnimation {
-      duration: 300
-      easing.type: Easing.Bezier
-      easing.bezierCurve: [0.4, 0, 0.2, 1]
     }
   }
 

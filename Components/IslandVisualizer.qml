@@ -84,7 +84,8 @@ RowLayout {
       Layout.alignment: Qt.AlignVCenter
 
       Rectangle {
-        anchors.centerIn: parent
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
         width: 2.5
         radius: 1.25
         height: root.barHeights[index]

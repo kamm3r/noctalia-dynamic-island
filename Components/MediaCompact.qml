@@ -17,7 +17,7 @@ Item {
 
   anchors.fill: parent
 
-  readonly property real artSize: Math.round(height * 0.85)
+  readonly property real artSize: Math.round(height * 1.1)
   readonly property real visualizerWidth: 24
 
   RowLayout {
@@ -81,7 +81,6 @@ Item {
         anchors.centerIn: parent
         running: root.showVisualizer && root.isPlaying
         barColor: Color.mPrimary
-        maxBarHeight: root.artSize - 6
         visible: root.showVisualizer
       }
 

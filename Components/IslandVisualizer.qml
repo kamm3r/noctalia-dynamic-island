@@ -9,10 +9,10 @@ RowLayout {
   property bool running: false
   property color barColor: "#FFFFFF"
   property real barOpacity: 0.85
-  property real maxBarHeight: 20
+  property real maxBarHeight: 14
   property bool silent: true
 
-  spacing: 2.5
+  spacing: 2
 
   property var barHeights: [2, 2, 2, 2, 2, 2]
   property var targetHeights: [2, 2, 2, 2, 2, 2]
@@ -79,15 +79,15 @@ RowLayout {
     model: 6
 
     Item {
-      width: 2.5
+      width: 2
       height: 24
       Layout.alignment: Qt.AlignVCenter
 
       Rectangle {
         anchors.horizontalCenter: parent.horizontalCenter
         y: (parent.height - height) / 2
-        width: 2.5
-        radius: 1.25
+        width: 2
+        radius: 25
         height: root.barHeights[index]
         color: root.barColor
         opacity: root.barOpacity

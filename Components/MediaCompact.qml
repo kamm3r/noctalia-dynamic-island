@@ -21,7 +21,8 @@ Item {
   readonly property real visualizerWidth: 24
 
   RowLayout {
-    anchors.fill: parent
+    anchors.centerIn: parent
+    width: parent.width
     spacing: 8
 
     Rectangle {

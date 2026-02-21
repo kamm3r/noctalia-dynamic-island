@@ -167,7 +167,7 @@ Item {
 
     onClicked: {
       if (isMorphingOut) return
-      
+
       root.isMorphingOut = true
       morphOutTimer.start()
     }

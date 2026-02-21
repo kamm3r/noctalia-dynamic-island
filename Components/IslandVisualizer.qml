@@ -9,13 +9,13 @@ RowLayout {
   property bool running: false
   property color barColor: "#FFFFFF"
   property real barOpacity: 0.85
-  property real maxBarHeight: 14
+  property real maxBarHeight: 20
   property bool silent: true
 
   spacing: 2.5
 
-  property var barHeights: [3, 3, 3, 3, 3, 3]
-  property var targetHeights: [3, 3, 3, 3, 3, 3]
+  property var barHeights: [2, 2, 2, 2, 2, 2]
+  property var targetHeights: [2, 2, 2, 2, 2, 2]
   property var velocities: [0, 0, 0, 0, 0, 0]
 
   Timer {
@@ -25,15 +25,15 @@ RowLayout {
 
     onTriggered: {
       let changed = false
-      const stiffness = [0.12, 0.16, 0.22, 0.22, 0.16, 0.12]
+      const stiffness = [0.18, 0.22, 0.28, 0.28, 0.22, 0.18]
       const damping = 0.82
 
-      const silent = targetHeights.every(v => v <= 3.05)
+      const silent = targetHeights.every(v => v <= 2.05)
       root.silent = silent
-      
+
       for (let i = 0; i < barHeights.length; i++) {
         if (silent) {
-          barHeights[i] = 3
+          barHeights[i] = 2
           velocities[i] = 0
           changed = true
         } else {
@@ -68,7 +68,7 @@ RowLayout {
 
       for (let i = 0; i < 6; i++) {
         const val = values[sampleIndices[i]] || 0
-        const scaled = Math.max(3, Math.min(maxBarHeight, 3 + val * 22))
+        const scaled = Math.max(2, Math.min(maxBarHeight, 2 + val * 30))
         targetHeights[i] = scaled
       }
       targetHeights = targetHeights.slice()
@@ -84,8 +84,8 @@ RowLayout {
       Layout.alignment: Qt.AlignVCenter
 
       Rectangle {
-        anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
+        y: (parent.height - height) / 2
         width: 2.5
         radius: 1.25
         height: root.barHeights[index]

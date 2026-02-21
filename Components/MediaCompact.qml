@@ -17,7 +17,7 @@ Item {
 
   anchors.fill: parent
 
-  readonly property real artSize: Math.round(height * 0.75)
+  readonly property real artSize: Math.round(height * 0.85)
   readonly property real visualizerWidth: 24
 
   RowLayout {

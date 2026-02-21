@@ -10,6 +10,7 @@ RowLayout {
   property color barColor: "#FFFFFF"
   property real barOpacity: 0.85
   property real maxBarHeight: 14
+  property bool silent: true
 
   spacing: 2.5
 
@@ -28,6 +29,7 @@ RowLayout {
       const damping = 0.82
 
       const silent = targetHeights.every(v => v <= 3.05)
+      root.silent = silent
       
       for (let i = 0; i < barHeights.length; i++) {
         if (silent) {
@@ -90,6 +92,7 @@ RowLayout {
         opacity: root.barOpacity
 
         Behavior on height {
+          enabled: !root.silent
           NumberAnimation {
             duration: 100
             easing.type: Easing.OutCubic

@@ -27,18 +27,25 @@ RowLayout {
       const stiffness = [0.12, 0.16, 0.22, 0.22, 0.16, 0.12]
       const damping = 0.82
 
+      const silent = targetHeights.every(v => v <= 3.05)
+      
       for (let i = 0; i < barHeights.length; i++) {
-        const silent = targetHeights.every(v => v <= 3.05)
-        const phaseOffset = silent ? 0 : (i - 2.5) * 0.15
-        const target = targetHeights[i] + phaseOffset
-        let force = (target - barHeights[i]) * stiffness[i]
-
-        velocities[i] += force
-        velocities[i] *= damping
-
-        if (Math.abs(velocities[i]) > 0.01) {
-          barHeights[i] += velocities[i]
+        if (silent) {
+          barHeights[i] = 3
+          velocities[i] = 0
           changed = true
+        } else {
+          const phaseOffset = (i - 2.5) * 0.15
+          const target = targetHeights[i] + phaseOffset
+          let force = (target - barHeights[i]) * stiffness[i]
+
+          velocities[i] += force
+          velocities[i] *= damping
+
+          if (Math.abs(velocities[i]) > 0.01) {
+            barHeights[i] += velocities[i]
+            changed = true
+          }
         }
       }
 

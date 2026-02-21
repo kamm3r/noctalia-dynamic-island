@@ -30,17 +30,13 @@ Item {
   readonly property bool hasMedia: MediaService.currentPlayer !== null
   readonly property bool isPlaying: MediaService.isPlaying
 
-  property bool isHovered: false
-  property bool isMorphingOut: false
   property bool showContent: true
+  property bool isMorphActive: false
 
   readonly property string cavaComponentId: "dynamic-island:" + screenName
 
-  readonly property real morphTargetWidth: 360
-  readonly property real morphTargetHeight: 280
-
-  implicitWidth: isMorphingOut ? morphTargetWidth : compactWidth
-  implicitHeight: isMorphingOut ? morphTargetHeight : capsuleHeight
+  implicitWidth: compactWidth
+  implicitHeight: capsuleHeight
 
   visible: true
   opacity: (hasMedia || showContent) ? 1.0 : 0.3
@@ -74,18 +70,17 @@ Item {
     }
   }
 
-  Component.onDestruction: {
-    CavaService.unregisterComponent(cavaComponentId)
+  function resetMorphState() {
+    root.isMorphActive = false
+    if (morphOverlayLoader.item) {
+      morphOverlayLoader.item.close()
+    }
   }
 
-  Connections {
-    target: pluginApi
-    enabled: pluginApi !== null
-
-    function onPanelOpenScreenChanged() {
-      if (pluginApi.panelOpenScreen === null && root.isMorphingOut) {
-        root.isMorphingOut = false
-      }
+  Component.onDestruction: {
+    CavaService.unregisterComponent(cavaComponentId)
+    if (morphOverlayLoader.item) {
+      morphOverlayLoader.item.close()
     }
   }
 
@@ -97,33 +92,16 @@ Item {
     y: Style.pixelAlignCenter(parent.height, height)
 
     radius: Style.radiusL
-    color: root.isHovered ? Color.mHover : Color.mSurface
-    border.color: root.isHovered ? Color.mPrimary : Color.mOutline
+    color: Color.mSurface
+    border.color: Color.mOutline
     border.width: Style.capsuleBorderWidth
 
-    Behavior on width {
-      enabled: root.visible || root.isMorphingOut
-      NumberAnimation {
-        duration: 300
-        easing.type: Easing.Bezier
-        easing.bezierCurve: [0.4, 0, 0.2, 1]
-      }
-    }
+    opacity: root.isMorphActive ? 0 : 1
 
-    Behavior on height {
-      enabled: root.visible || root.isMorphingOut
+    Behavior on opacity {
       NumberAnimation {
-        duration: 300
-        easing.type: Easing.Bezier
-        easing.bezierCurve: [0.4, 0, 0.2, 1]
-      }
-    }
-
-    Behavior on color {
-      enabled: !Color.isTransitioning
-      ColorAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.InOutQuad
+        duration: 150
+        easing.type: Easing.OutCubic
       }
     }
 
@@ -151,34 +129,92 @@ Item {
     }
   }
 
+  Loader {
+    id: morphOverlayLoader
+    active: false
+    sourceComponent: MorphOverlay {
+      targetWidth: 360
+      targetHeight: 280
+
+      onCollapsed: {
+        var popupWindow = PanelService.getPopupMenuWindow(root.screen)
+        if (popupWindow) {
+          popupWindow.close()
+        }
+      }
+    }
+
+    Connections {
+      target: morphOverlayLoader.item
+      ignoreUnknownSignals: true
+      function onCollapsed() {
+        root.isMorphActive = false
+        var popupWindow = PanelService.getPopupMenuWindow(root.screen)
+        if (popupWindow) {
+          popupWindow.close()
+        }
+      }
+      function onStateChanged() {
+        if (morphOverlayLoader.item && morphOverlayLoader.item.state === "idle") {
+          root.isMorphActive = false
+        }
+      }
+    }
+
+    function showMorph(startX, startY, startWidth, startHeight, targetX, targetY) {
+      active = true
+      Qt.callLater(() => {
+        if (item) {
+          item.targetX = targetX
+          item.targetY = targetY
+          item.expand(startX, startY, startWidth, startHeight)
+        }
+      })
+    }
+
+    function hideMorph() {
+      if (item) {
+        item.collapse()
+      }
+    }
+  }
+
   MouseArea {
     id: mouseArea
     anchors.fill: parent
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
 
-    onEntered: {
-      root.isHovered = true
-    }
-
-    onExited: {
-      root.isHovered = false
-    }
-
     onClicked: {
-      if (isMorphingOut) return
+      if (root.isMorphActive) return
 
-      root.isMorphingOut = true
-      morphOutTimer.start()
-    }
-  }
+      root.isMorphActive = true
 
-  Timer {
-    id: morphOutTimer
-    interval: 300
-    repeat: false
-    onTriggered: {
-      pluginApi?.openPanel(root.screen, root)
+      var globalPos = visualCapsule.mapToItem(null, 0, 0)
+      var barWindow = root.Window.window
+      var windowPos = barWindow ? Qt.point(barWindow.x, barWindow.y) : Qt.point(0, 0)
+
+      var screenStartX = windowPos.x + globalPos.x
+      var screenStartY = windowPos.y + globalPos.y
+
+      var targetX = screenStartX + (root.implicitWidth - 360) / 2
+      var targetY = screenStartY + root.implicitHeight + 10
+
+      var popupWindow = PanelService.getPopupMenuWindow(root.screen)
+      if (popupWindow) {
+        morphOverlayLoader.parent = popupWindow.dialogParent
+
+        morphOverlayLoader.showMorph(
+          screenStartX,
+          screenStartY,
+          root.implicitWidth,
+          root.implicitHeight,
+          targetX,
+          targetY
+        )
+
+        popupWindow.open()
+      }
     }
   }
 

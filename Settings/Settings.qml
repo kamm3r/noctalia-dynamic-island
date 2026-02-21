@@ -30,19 +30,19 @@ Item {
     }
 
     NText {
-      text: "Compact Width: " + compactWidthSlider.value
+      text: "Island Width: " + widthSlider.value
       color: Color.mOnSurface
       pointSize: Style.fontSizeS
       Layout.fillWidth: true
     }
 
     Slider {
-      id: compactWidthSlider
+      id: widthSlider
       Layout.fillWidth: true
-      from: 150
-      to: 300
+      from: 120
+      to: 280
       stepSize: 10
-      value: settings.compactWidth ?? 200
+      value: settings.compactWidth ?? 180
 
       onMoved: {
         pluginApi.pluginSettings.compactWidth = value
@@ -51,65 +51,43 @@ Item {
     }
 
     NText {
-      text: "Expanded Width: " + expandedWidthSlider.value
+      text: "Clear Delay: " + (delaySlider.value / 1000).toFixed(1) + "s"
       color: Color.mOnSurface
       pointSize: Style.fontSizeS
       Layout.fillWidth: true
     }
 
     Slider {
-      id: expandedWidthSlider
+      id: delaySlider
       Layout.fillWidth: true
-      from: 300
-      to: 500
-      stepSize: 25
-      value: settings.expandedWidth ?? 400
-
-      onMoved: {
-        pluginApi.pluginSettings.expandedWidth = value
-        pluginApi.saveSettings()
-      }
-    }
-
-    NText {
-      text: "Expanded Height: " + expandedHeightSlider.value
-      color: Color.mOnSurface
-      pointSize: Style.fontSizeS
-      Layout.fillWidth: true
-    }
-
-    Slider {
-      id: expandedHeightSlider
-      Layout.fillWidth: true
-      from: 80
-      to: 200
-      stepSize: 10
-      value: settings.expandedHeight ?? 120
-
-      onMoved: {
-        pluginApi.pluginSettings.expandedHeight = value
-        pluginApi.saveSettings()
-      }
-    }
-
-    NText {
-      text: "Auto-collapse Timeout (ms): " + timeoutSlider.value
-      color: Color.mOnSurface
-      pointSize: Style.fontSizeS
-      Layout.fillWidth: true
-    }
-
-    Slider {
-      id: timeoutSlider
-      Layout.fillWidth: true
-      from: 2000
+      from: 1000
       to: 10000
       stepSize: 500
-      value: settings.expandedTimeout ?? 5000
+      value: settings.clearDelay ?? 3000
 
       onMoved: {
-        pluginApi.pluginSettings.expandedTimeout = value
+        pluginApi.pluginSettings.clearDelay = value
         pluginApi.saveSettings()
+      }
+    }
+
+    RowLayout {
+      Layout.fillWidth: true
+      spacing: Style.marginS
+
+      NText {
+        text: "Scroll Title"
+        color: Color.mOnSurface
+        pointSize: Style.fontSizeS
+        Layout.fillWidth: true
+      }
+
+      Switch {
+        checked: settings.scrollTitle ?? true
+        onToggled: {
+          pluginApi.pluginSettings.scrollTitle = checked
+          pluginApi.saveSettings()
+        }
       }
     }
 

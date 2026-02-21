@@ -1,9 +1,7 @@
 {
   "settings.title": "Dynamic Island Settings",
-  "settings.compact-width": "Compact Width",
-  "settings.expanded-width": "Expanded Width",
-  "settings.expanded-height": "Expanded Height",
-  "settings.expanded-timeout": "Auto-collapse Timeout",
-  "settings.show-visualizer": "Show Visualizer",
-  "widget.no-media": "No media playing"
+  "settings.compact-width": "Island Width",
+  "settings.clear-delay": "Clear Delay",
+  "settings.scroll-title": "Scroll Title",
+  "settings.show-visualizer": "Show Visualizer"
 }

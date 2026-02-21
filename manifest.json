@@ -16,12 +16,10 @@
   },
   "metadata": {
     "defaultSettings": {
-      "compactWidth": 200,
-      "expandedWidth": 400,
-      "expandedHeight": 120,
-      "expandedTimeout": 5000,
-      "showVisualizer": true,
-      "visualizerType": "spring"
+      "compactWidth": 180,
+      "clearDelay": 3000,
+      "scrollTitle": true,
+      "showVisualizer": true
     }
   }
 }

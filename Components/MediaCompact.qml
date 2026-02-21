@@ -11,110 +11,92 @@ Item {
   property var screen
   property real barFontSize: 12
   property bool showVisualizer: false
+  property bool scrollTitle: true
+  property real capsuleHeight: 36
+  property bool hasMedia: false
+  property bool isPlaying: false
 
   anchors.fill: parent
 
-  readonly property real artSize: Math.min(28, parent.height - 8)
+  readonly property real artSize: Math.round(capsuleHeight * 0.72)
+  readonly property real visualizerWidth: 24
 
   RowLayout {
     anchors.fill: parent
     spacing: 8
 
     Rectangle {
-      id: albumArtContainer
+      id: albumArt
       Layout.preferredWidth: root.artSize
       Layout.preferredHeight: root.artSize
       Layout.alignment: Qt.AlignVCenter
-      radius: 6
-      color: "transparent"
+      radius: Math.round(root.artSize * 0.22)
+      color: Color.mSurfaceVariant
       clip: true
-
-      Rectangle {
-        anchors.fill: parent
-        anchors.margins: -1
-        radius: 7
-        color: Color.mSurfaceVariant
-        visible: MediaService.trackArtUrl === ""
-      }
 
       NImageRounded {
         anchors.fill: parent
         visible: MediaService.trackArtUrl !== ""
         imagePath: MediaService.trackArtUrl
-        radius: 6
+        radius: parent.radius
         borderWidth: 0
         imageFillMode: Image.PreserveAspectCrop
-      }
-
-      Rectangle {
-        anchors.fill: parent
-        radius: 6
-        color: "#000000"
-        opacity: 0.3
-        visible: MediaService.trackArtUrl !== "" && !MediaService.isPlaying
-
-        NIcon {
-          anchors.centerIn: parent
-          icon: "player-pause"
-          color: "#FFFFFF"
-          pointSize: 10
-        }
       }
     }
 
     Item {
       Layout.fillWidth: true
-      Layout.fillHeight: true
+      Layout.preferredHeight: root.capsuleHeight
       Layout.alignment: Qt.AlignVCenter
+      clip: true
 
-      NText {
-        id: titleText
+      NScrollText {
+        id: scrollTitle
+        anchors.fill: parent
+
         text: MediaService.trackTitle || "Unknown"
-        color: Color.mOnSurface
-        pointSize: root.barFontSize
-        font.weight: Font.Medium
-        elide: Text.ElideRight
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.rightMargin: root.showVisualizer ? 36 : 0
+        scrollMode: root.scrollTitle ? NScrollText.ScrollMode.Always : NScrollText.ScrollMode.Never
+        maxWidth: parent.width
+        gradientColor: Color.mSurface
+        gradientWidth: 6
+        waitBeforeScrolling: 2000
+        scrollCycleDuration: Math.max(5000, text.length * 80)
+
+        NText {
+          color: Color.mOnSurface
+          pointSize: root.barFontSize
+          font.weight: Font.Medium
+          elide: Text.ElideNone
+        }
       }
     }
 
     Item {
-      Layout.preferredWidth: 28
-      Layout.preferredHeight: 20
+      Layout.preferredWidth: root.visualizerWidth
+      Layout.preferredHeight: root.artSize
       Layout.alignment: Qt.AlignVCenter
-      visible: root.showVisualizer
 
       IslandVisualizer {
         anchors.centerIn: parent
-        running: root.showVisualizer && MediaService.isPlaying
+        running: root.showVisualizer && root.isPlaying
         barColor: Color.mPrimary
-        maxBarHeight: 14
+        maxBarHeight: root.artSize - 6
+        visible: root.showVisualizer
       }
-    }
 
-    Rectangle {
-      Layout.preferredWidth: 6
-      Layout.preferredHeight: 6
-      Layout.alignment: Qt.AlignVCenter
-      radius: 3
-      color: Color.mPrimary
-      visible: !root.showVisualizer && MediaService.isPlaying
+      Rectangle {
+        width: 6
+        height: 6
+        radius: 3
+        color: Color.mPrimary
+        visible: !root.showVisualizer && root.isPlaying
+        anchors.centerIn: parent
 
-      SequentialAnimation on opacity {
-        running: parent.visible
-        loops: Animation.Infinite
-        NumberAnimation {
-          to: 0.4
-          duration: 800
-          easing.type: Easing.InOutSine
-        }
-        NumberAnimation {
-          to: 1.0
-          duration: 800
-          easing.type: Easing.InOutSine
+        SequentialAnimation on opacity {
+          running: parent.visible
+          loops: Animation.Infinite
+          NumberAnimation { to: 0.4; duration: 800; easing.type: Easing.InOutSine }
+          NumberAnimation { to: 1.0; duration: 800; easing.type: Easing.InOutSine }
         }
       }
     }

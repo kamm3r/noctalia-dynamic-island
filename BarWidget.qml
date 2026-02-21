@@ -24,7 +24,8 @@ Item {
 
   readonly property var settings: pluginApi?.pluginSettings ?? {}
   readonly property real compactWidth: settings.compactWidth ?? 180
-  readonly property int expandedTimeout: settings.expandedTimeout ?? 5000
+  readonly property int clearDelay: settings.clearDelay ?? 3000
+  readonly property bool scrollTitle: settings.scrollTitle ?? true
   readonly property bool showVisualizer: settings.showVisualizer ?? true
 
   readonly property bool hasMedia: MediaService.currentPlayer !== null
@@ -32,33 +33,42 @@ Item {
 
   property bool isHovered: false
   property bool isMorphingOut: false
+  property bool showContent: true
 
   readonly property string cavaComponentId: "dynamic-island:" + screenName
 
   readonly property real morphTargetWidth: 360
   readonly property real morphTargetHeight: 280
 
-  readonly property bool isHidden: !hasMedia || isMorphingOut
-
   implicitWidth: isMorphingOut ? morphTargetWidth : compactWidth
   implicitHeight: isMorphingOut ? morphTargetHeight : capsuleHeight
 
-  visible: hasMedia
-  opacity: isMorphingOut ? 0.0 : (isHidden ? 0.0 : 1.0)
+  visible: true
+  opacity: (hasMedia || showContent) ? 1.0 : 0.3
 
-  Layout.preferredWidth: visible ? implicitWidth : 0
+  Layout.preferredWidth: implicitWidth
   Layout.preferredHeight: implicitHeight
 
-  onVisibleChanged: {
-    if (visible && showVisualizer && hasMedia && !isMorphingOut) {
-      CavaService.registerComponent(cavaComponentId)
+  onHasMediaChanged: {
+    if (!hasMedia) {
+      clearDelayTimer.start()
     } else {
-      CavaService.unregisterComponent(cavaComponentId)
+      clearDelayTimer.stop()
+      showContent = true
     }
   }
 
-  onHasMediaChanged: {
-    if (hasMedia && visible && showVisualizer && !isMorphingOut) {
+  Timer {
+    id: clearDelayTimer
+    interval: root.clearDelay
+    repeat: false
+    onTriggered: {
+      showContent = false
+    }
+  }
+
+  onVisibleChanged: {
+    if (visible && showVisualizer && (hasMedia || showContent)) {
       CavaService.registerComponent(cavaComponentId)
     } else {
       CavaService.unregisterComponent(cavaComponentId)
@@ -92,9 +102,9 @@ Item {
   Loader {
     id: contentLoader
     anchors.fill: parent
-    anchors.leftMargin: 10
-    anchors.rightMargin: 10
-    active: hasMedia && !isMorphingOut
+    anchors.leftMargin: 8
+    anchors.rightMargin: 8
+    active: hasMedia || showContent
     sourceComponent: mediaCompactComponent
   }
 
@@ -104,6 +114,10 @@ Item {
       screen: root.screen
       barFontSize: root.barFontSize
       showVisualizer: root.showVisualizer && root.isPlaying
+      scrollTitle: root.scrollTitle
+      capsuleHeight: root.capsuleHeight
+      hasMedia: root.hasMedia || root.showContent
+      isPlaying: root.isPlaying
     }
   }
 
@@ -122,7 +136,7 @@ Item {
     }
 
     onClicked: {
-      if (isMorphingOut || !hasMedia) return
+      if (isMorphingOut) return
       
       root.isMorphingOut = true
       morphOutTimer.start()
@@ -158,7 +172,7 @@ Item {
 
   Behavior on opacity {
     NumberAnimation {
-      duration: 200
+      duration: 300
       easing.type: Easing.InOutCubic
     }
   }

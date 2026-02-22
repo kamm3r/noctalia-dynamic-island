@@ -117,8 +117,9 @@ Item {
 
         property real position: MediaService.currentPosition
         property real duration: MediaService.trackLength
-        readonly property real progress: duration > 0 ? Math.max(0, Math.min(1, position / duration)) : 0
-        readonly property bool hasValidDuration: duration > 0 && position <= duration * 1.1
+        readonly property bool hasDuration: duration > 0
+        readonly property real progress: hasDuration ? Math.max(0, Math.min(1, position / duration)) : 0
+        readonly property bool hasValidDuration: hasDuration && position <= duration * 1.1
 
         function formatTime(sec) {
           if (sec < 0 || !isFinite(sec)) return "--:--"
@@ -148,9 +149,37 @@ Item {
           height: progressBarBg.height
           radius: progressBarBg.radius
           color: Color.mPrimary
+          visible: parent.hasValidDuration
 
           Behavior on width {
             NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+          }
+        }
+
+        Rectangle {
+          id: indeterminateBar
+          anchors.verticalCenter: parent.verticalCenter
+          width: 60
+          height: progressBarBg.height
+          radius: progressBarBg.radius
+          color: Color.mPrimary
+          visible: !parent.hasDuration && MediaService.isPlaying
+
+          SequentialAnimation on x {
+            running: indeterminateBar.visible
+            loops: Animation.Infinite
+            NumberAnimation {
+              from: 0
+              to: progressContainer.width - indeterminateBar.width
+              duration: 1500
+              easing.type: Easing.InOutQuad
+            }
+            NumberAnimation {
+              from: progressContainer.width - indeterminateBar.width
+              to: 0
+              duration: 1500
+              easing.type: Easing.InOutQuad
+            }
           }
         }
 
@@ -189,6 +218,8 @@ Item {
       RowLayout {
         Layout.fillWidth: true
 
+        readonly property bool hasDuration: MediaService.trackLength > 0
+
         function formatTime(sec) {
           if (sec < 0 || !isFinite(sec)) return "--:--"
           sec = Math.floor(sec)
@@ -213,7 +244,11 @@ Item {
 
         NText {
           readonly property real remaining: MediaService.trackLength - MediaService.currentPosition
-          text: MediaService.trackLength > 0 && remaining >= 0 ? "-" + parent.formatTime(remaining) : parent.formatTime(MediaService.trackLength)
+          text: {
+            if (!parent.hasDuration) return "LIVE"
+            if (remaining >= 0) return "-" + parent.formatTime(remaining)
+            return parent.formatTime(MediaService.trackLength)
+          }
           color: Color.mOnSurfaceVariant
           pointSize: Style.fontSizeS
         }

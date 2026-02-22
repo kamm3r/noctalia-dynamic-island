@@ -8,7 +8,8 @@
   "repository": "",
   "description": "Apple-style Dynamic Island that expands for media controls",
   "entryPoints": {
-    "barWidget": "BarWidget.qml"
+    "barWidget": "BarWidget.qml",
+    "panel": "Panel.qml"
   },
   "dependencies": {
     "plugins": []

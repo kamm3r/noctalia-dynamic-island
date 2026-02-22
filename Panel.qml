@@ -111,17 +111,25 @@ Item {
       }
 
       Item {
+        id: progressContainer
         Layout.fillWidth: true
         implicitHeight: 28
 
         property real position: MediaService.currentPosition
         property real duration: MediaService.trackLength
+        readonly property real progress: duration > 0 ? Math.max(0, Math.min(1, position / duration)) : 0
+        readonly property bool hasValidDuration: duration > 0 && position <= duration * 1.1
 
         function formatTime(sec) {
+          if (sec < 0 || !isFinite(sec)) return "--:--"
           sec = Math.floor(sec)
-          let m = Math.floor(sec / 60)
+          let h = Math.floor(sec / 3600)
+          let m = Math.floor((sec % 3600) / 60)
           let s = sec % 60
-          return m + ":" + (s < 10 ? "0" + s : s)
+          if (h > 0) {
+            return h + ":" + (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s
+          }
+          return m + ":" + (s < 10 ? "0" : "") + s
         }
 
         Rectangle {
@@ -136,7 +144,7 @@ Item {
         Rectangle {
           id: progressBarFill
           anchors.verticalCenter: parent.verticalCenter
-          width: progressBarBg.width * (parent.duration > 0 ? parent.position / parent.duration : 0)
+          width: progressBarBg.width * parent.progress
           height: progressBarBg.height
           radius: progressBarBg.radius
           color: Color.mPrimary
@@ -149,21 +157,23 @@ Item {
         Rectangle {
           id: progressHandle
           anchors.verticalCenter: parent.verticalCenter
-          x: progressBarFill.width - width / 2
+          x: Math.min(progressBarFill.width - width / 2, progressBarBg.width - width)
           width: 12
           height: 12
           radius: 6
           color: Color.mPrimary
-          visible: progressMouseArea.containsMouse || progressMouseArea.pressed
+          visible: parent.hasValidDuration && (progressMouseArea.containsMouse || progressMouseArea.pressed)
         }
 
         MouseArea {
           id: progressMouseArea
           anchors.fill: parent
           hoverEnabled: true
-          cursorShape: Qt.PointingHandCursor
+          cursorShape: parent.hasValidDuration ? Qt.PointingHandCursor : Qt.ArrowCursor
+          enabled: parent.hasValidDuration
 
           function seekTo(mouseX) {
+            if (!parent.hasValidDuration) return
             let ratio = Math.max(0, Math.min(1, mouseX / width))
             let newPos = parent.duration * ratio
             MediaService.setPosition(newPos)
@@ -180,10 +190,15 @@ Item {
         Layout.fillWidth: true
 
         function formatTime(sec) {
+          if (sec < 0 || !isFinite(sec)) return "--:--"
           sec = Math.floor(sec)
-          let m = Math.floor(sec / 60)
+          let h = Math.floor(sec / 3600)
+          let m = Math.floor((sec % 3600) / 60)
           let s = sec % 60
-          return m + ":" + (s < 10 ? "0" + s : s)
+          if (h > 0) {
+            return h + ":" + (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s
+          }
+          return m + ":" + (s < 10 ? "0" : "") + s
         }
 
         NText {
@@ -197,7 +212,8 @@ Item {
         }
 
         NText {
-          text: "-" + parent.formatTime(Math.max(MediaService.trackLength - MediaService.currentPosition, 0))
+          readonly property real remaining: MediaService.trackLength - MediaService.currentPosition
+          text: MediaService.trackLength > 0 && remaining >= 0 ? "-" + parent.formatTime(remaining) : parent.formatTime(MediaService.trackLength)
           color: Color.mOnSurfaceVariant
           pointSize: Style.fontSizeS
         }

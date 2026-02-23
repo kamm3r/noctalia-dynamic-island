@@ -32,6 +32,8 @@ Item {
 
   property bool showContent: true
 
+  scale: 1.0
+
   readonly property string cavaComponentId: "dynamic-island:" + screenName
 
   implicitWidth: compactWidth
@@ -115,6 +117,12 @@ Item {
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
 
+    onPressed: {
+      root.scale = 0.97
+    }
+    onReleased: {
+      root.scale = 1.0
+    }
     onClicked: {
       pluginApi?.openPanel(root.screen, root)
     }
@@ -124,6 +132,13 @@ Item {
     NumberAnimation {
       duration: 300
       easing.type: Easing.InOutCubic
+    }
+  }
+
+  Behavior on scale {
+    NumberAnimation {
+      duration: 150
+      easing.type: Easing.OutCubic
     }
   }
 

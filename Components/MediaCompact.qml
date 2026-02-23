@@ -62,13 +62,17 @@ Item {
         gradientColor: Color.mSurface
         gradientWidth: 6
         waitBeforeScrolling: 2000
-        scrollCycleDuration: Math.max(10000, text.length * 150)
+        scrollCycleDuration: Math.max(20000, text.length * 300)
 
         NText {
           color: Color.mOnSurface
           pointSize: root.barFontSize
           font.weight: Font.Medium
           elide: Text.ElideNone
+
+          Behavior on x {
+            NumberAnimation { duration: parent.scrollCycleDuration; easing.type: Easing.Linear }
+          }
         }
       }
     }

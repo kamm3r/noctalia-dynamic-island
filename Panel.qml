@@ -155,16 +155,6 @@ Item {
                         elide: Text.ElideRight
                         Layout.fillWidth: true
                     }
-
-                    NText {
-                        text: MediaService.trackAlbum || ""
-                        color: Color.mOnSurfaceVariant
-                        pointSize: Style.fontSizeS
-                        elide: Text.ElideRight
-                        Layout.fillWidth: true
-                        opacity: 0.7
-                        visible: text !== ""
-                    }
                 }
             }
 
@@ -176,13 +166,20 @@ Item {
             Item {
                 id: progressContainer
                 Layout.fillWidth: true
-                implicitHeight: 14
+                implicitHeight: 20
 
                 property real position: MediaService.currentPosition
                 property real duration: MediaService.trackLength
                 readonly property bool hasDuration: duration > 0
                 readonly property real progress: hasDuration ? Math.max(0, Math.min(1, position / duration)) : 0
                 readonly property bool hasValidDuration: hasDuration && position <= duration * 1.1
+
+                property bool isDragging: false
+                property real dragRatio: 0
+
+                function getEffectiveProgress() {
+                    return isDragging ? dragRatio : progress;
+                }
 
                 function formatTime(sec) {
                     if (sec < 0 || !isFinite(sec))
@@ -209,77 +206,74 @@ Item {
                 Rectangle {
                     id: progressBarFill
                     anchors.verticalCenter: parent.verticalCenter
-                    width: progressBarBg.width * parent.progress
+                    width: parent.width * parent.getEffectiveProgress()
                     height: progressBarBg.height
                     radius: progressBarBg.radius
                     color: Color.mPrimary
-                    visible: parent.hasValidDuration
-
-                    Behavior on width {
-                        NumberAnimation {
-                            duration: 200
-                            easing.type: Easing.OutCubic
-                        }
-                    }
-                }
-
-                Rectangle {
-                    id: indeterminateBar
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 60
-                    height: progressBarBg.height
-                    radius: progressBarBg.radius
-                    color: Color.mPrimary
-                    visible: !parent.hasDuration && MediaService.isPlaying
-
-                    SequentialAnimation on x {
-                        running: indeterminateBar.visible
-                        loops: Animation.Infinite
-                        NumberAnimation {
-                            from: 0
-                            to: progressContainer.width - indeterminateBar.width
-                            duration: 1500
-                            easing.type: Easing.InOutQuad
-                        }
-                        NumberAnimation {
-                            from: progressContainer.width - indeterminateBar.width
-                            to: 0
-                            duration: 1500
-                            easing.type: Easing.InOutQuad
-                        }
-                    }
+                    visible: parent.hasValidDuration || parent.isDragging
                 }
 
                 Rectangle {
                     id: progressHandle
                     anchors.verticalCenter: parent.verticalCenter
-                    x: Math.min(progressBarFill.width - width / 2, progressBarBg.width - width)
-                    width: 12
-                    height: 12
-                    radius: 6
+                    width: parent.isDragging ? 16 : 12
+                    height: parent.isDragging ? 16 : 12
+                    radius: parent.isDragging ? 8 : 6
+                    x: parent.width * parent.getEffectiveProgress() - width / 2
                     color: Color.mPrimary
-                    visible: parent.hasValidDuration && (progressMouseArea.containsMouse || progressMouseArea.pressed)
+                    visible: parent.hasValidDuration || parent.isDragging
+                }
+
+                Rectangle {
+                    id: timeTooltip
+                    visible: progressContainer.isDragging
+                    y: -24
+                    x: Math.min(Math.max(0, progressMouseArea.mouseX - 30), progressContainer.width - 60)
+                    width: 60
+                    height: 18
+                    radius: 4
+                    color: Color.mSurface
+                    border.color: Color.mOutline
+                    border.width: 1
+
+                    NText {
+                        anchors.centerIn: parent
+                        text: progressContainer.formatTime(progressContainer.dragRatio * progressContainer.duration)
+                        color: Color.mOnSurface
+                        pointSize: 10
+                    }
                 }
 
                 MouseArea {
                     id: progressMouseArea
+                    property real mouseX: 0
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: parent.hasValidDuration ? Qt.PointingHandCursor : Qt.ArrowCursor
                     enabled: parent.hasValidDuration
+                    preventStealing: true
 
-                    function seekTo(mouseX) {
-                        if (!parent.hasValidDuration)
-                            return;
-                        let ratio = Math.max(0, Math.min(1, mouseX / width));
-                        let newPos = parent.duration * ratio;
-                        MediaService.setPosition(newPos);
+                    onPositionChanged: mouse => {
+                        mouseX = mouse.x
+                        if (pressed && parent.hasValidDuration) {
+                            parent.dragRatio = Math.max(0, Math.min(1, mouse.x / parent.width));
+                            parent.isDragging = true;
+                        }
                     }
 
-                    onClicked: mouse => seekTo(mouse.x)
-                    onPositionChanged: mouse => {
-                        if (pressed)
-                            seekTo(mouse.x);
+                    onPressed: mouse => {
+                        if (parent.hasValidDuration) {
+                            parent.dragRatio = Math.max(0, Math.min(1, mouse.x / parent.width));
+                            parent.isDragging = true;
+                        }
+                    }
+
+                    onReleased: {
+                        if (parent.isDragging) {
+                            MediaService.seekByRatio(parent.dragRatio);
+                            parent.isDragging = false;
+                            parent.dragRatio = 0;
+                        }
                     }
                 }
             }
@@ -304,7 +298,7 @@ Item {
                 }
 
                 NText {
-                    text: parent.formatTime(MediaService.currentPosition)
+                    text: progressContainer.formatTime(progressContainer.isDragging ? progressContainer.dragRatio * progressContainer.duration : progressContainer.position)
                     color: Color.mOnSurfaceVariant
                     pointSize: Style.fontSizeS
                 }
@@ -314,13 +308,13 @@ Item {
                 }
 
                 NText {
-                    readonly property real remaining: MediaService.trackLength - MediaService.currentPosition
+                    readonly property real remaining: progressContainer.duration - (progressContainer.isDragging ? progressContainer.dragRatio * progressContainer.duration : progressContainer.position)
                     text: {
-                        if (!parent.hasDuration)
+                        if (!progressContainer.hasDuration)
                             return "LIVE";
                         if (remaining >= 0)
-                            return "-" + parent.formatTime(remaining);
-                        return parent.formatTime(MediaService.trackLength);
+                            return "-" + progressContainer.formatTime(remaining);
+                        return progressContainer.formatTime(MediaService.trackLength);
                     }
                     color: Color.mOnSurfaceVariant
                     pointSize: Style.fontSizeS
@@ -334,32 +328,127 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignHCenter
-                spacing: 16
+                spacing: 20
 
-                NIconButton {
-                    icon: "player-skip-back"
-                    enabled: MediaService.canGoPrevious
-                    opacity: enabled ? 1 : 0.3
-                    baseSize: 32
-                    onClicked: MediaService.previous()
+                Item {
+                    Layout.preferredWidth: 32
+                    Layout.preferredHeight: 32
+
+                    Item {
+                        id: prevBtn
+                        anchors.fill: parent
+                        scale: prevBtn.scaleVal
+                        property real scaleVal: 1.0
+                        Behavior on scaleVal { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
+                        Rectangle {
+                            id: prevBg
+                            anchors.fill: parent
+                            radius: 16
+                            color: Color.mOnSurface
+                            opacity: 0
+                        }
+
+                        NIcon {
+                            anchors.centerIn: parent
+                            icon: "player-skip-back"
+                            color: Color.mOnSurface
+                            pointSize: 16
+                            opacity: MediaService.canGoPrevious ? 1 : 0.3
+                        }
+                    }
+
+                    MouseArea {
+                        id: prevMa
+                        anchors.fill: parent
+                        enabled: MediaService.canGoPrevious
+                        onPressedChanged: {
+                            prevBg.opacity = pressed ? 0.1 : 0
+                        }
+                        onPressed: prevBtn.scaleVal = 0.97
+                        onReleased: prevBtn.scaleVal = 1.0
+                        onClicked: MediaService.previous()
+                    }
                 }
 
-                NIconButton {
-                    icon: MediaService.isPlaying ? "player-pause" : "player-play"
-                    enabled: MediaService.canPlay
-                    baseSize: 32
-                    colorBg: Color.mPrimary
-                    colorFg: Color.mOnPrimary
-                    colorBgHover: Color.mHover
-                    onClicked: MediaService.playPause()
+                Item {
+                    Layout.preferredWidth: 44
+                    Layout.preferredHeight: 44
+
+                    Item {
+                        id: playPauseBtn
+                        anchors.fill: parent
+                        scale: playPauseBtn.scaleVal
+                        property real scaleVal: 1.0
+                        Behavior on scaleVal { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
+                        Rectangle {
+                            id: playPauseBg
+                            anchors.fill: parent
+                            radius: 22
+                            color: Color.mOnSurface
+                            opacity: 0
+                        }
+
+                        NIcon {
+                            anchors.centerIn: parent
+                            icon: MediaService.isPlaying ? "player-pause" : "player-play"
+                            color: Color.mOnSurface
+                            pointSize: 20
+                        }
+                    }
+
+                    MouseArea {
+                        id: playPauseMa
+                        anchors.fill: parent
+                        onPressedChanged: {
+                            playPauseBg.opacity = pressed ? 0.1 : 0
+                        }
+                        onPressed: playPauseBtn.scaleVal = 0.97
+                        onReleased: playPauseBtn.scaleVal = 1.0
+                        onClicked: MediaService.playPause()
+                    }
                 }
 
-                NIconButton {
-                    icon: "player-skip-forward"
-                    enabled: MediaService.canGoNext
-                    opacity: enabled ? 1 : 0.3
-                    baseSize: 32
-                    onClicked: MediaService.next()
+                Item {
+                    Layout.preferredWidth: 32
+                    Layout.preferredHeight: 32
+
+                    Item {
+                        id: nextBtn
+                        anchors.fill: parent
+                        scale: nextBtn.scaleVal
+                        property real scaleVal: 1.0
+                        Behavior on scaleVal { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
+                        Rectangle {
+                            id: nextBg
+                            anchors.fill: parent
+                            radius: 16
+                            color: Color.mOnSurface
+                            opacity: 0
+                        }
+
+                        NIcon {
+                            anchors.centerIn: parent
+                            icon: "player-skip-forward"
+                            color: Color.mOnSurface
+                            pointSize: 16
+                            opacity: MediaService.canGoNext ? 1 : 0.3
+                        }
+                    }
+
+                    MouseArea {
+                        id: nextMa
+                        anchors.fill: parent
+                        enabled: MediaService.canGoNext
+                        onPressedChanged: {
+                            nextBg.opacity = pressed ? 0.1 : 0
+                        }
+                        onPressed: nextBtn.scaleVal = 0.97
+                        onReleased: nextBtn.scaleVal = 1.0
+                        onClicked: MediaService.next()
+                    }
                 }
             }
             Item {

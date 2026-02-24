@@ -80,7 +80,7 @@ RowLayout {
 
     Item {
       width: 2
-      height: 24
+      height: root.maxBarHeight + 4
       Layout.alignment: Qt.AlignVCenter
 
       Rectangle {

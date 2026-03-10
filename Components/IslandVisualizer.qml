@@ -59,11 +59,11 @@ RowLayout {
   }
 
   Connections {
-    target: CavaService
+    target: SpectrumService
     function onValuesChanged() {
-      if (!root.running || CavaService.values.length < 32) return
+      if (!root.running || SpectrumService.values.length < 32) return
 
-      const values = CavaService.values
+      const values = SpectrumService.values
       const sampleIndices = [2, 8, 14, 18, 24, 28]
 
       for (let i = 0; i < 6; i++) {

@@ -17,6 +17,7 @@ Item {
 
     readonly property bool showVisualizer: true
     readonly property bool isPlaying: MediaService.isPlaying
+    readonly property bool needsSpectrum: root.showVisualizer && root.isPlaying && MediaService.trackLength > 0
 
     readonly property string cavaComponentId: "dynamic-island-panel"
 
@@ -26,23 +27,22 @@ Item {
 
     Component.onCompleted: {
         fadeInTimer.start();
-        updateCavaRegistration();
+        updateSpectrumRegistration();
     }
 
     Component.onDestruction: {
-        CavaService.unregisterComponent(cavaComponentId)
+        SpectrumService.unregisterComponent(cavaComponentId)
     }
 
-    function updateCavaRegistration() {
-        if (root.showVisualizer && MediaService.trackLength > 0) {
-            CavaService.registerComponent(cavaComponentId)
+    function updateSpectrumRegistration() {
+        if (root.needsSpectrum) {
+            SpectrumService.registerComponent(cavaComponentId)
         } else {
-            CavaService.unregisterComponent(cavaComponentId)
+            SpectrumService.unregisterComponent(cavaComponentId)
         }
     }
 
-    onShowVisualizerChanged: updateCavaRegistration()
-    onIsPlayingChanged: updateCavaRegistration()
+    onNeedsSpectrumChanged: updateSpectrumRegistration()
 
     Timer {
         id: fadeInTimer

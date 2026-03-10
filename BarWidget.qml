@@ -29,6 +29,7 @@ Item {
 
   readonly property bool hasMedia: MediaService.currentPlayer !== null
   readonly property bool isPlaying: MediaService.isPlaying
+  readonly property bool needsSpectrum: root.showVisualizer && root.isPlaying
 
   property bool showContent: true
 
@@ -63,16 +64,16 @@ Item {
     }
   }
 
-  onVisibleChanged: {
-    if (visible && showVisualizer && (hasMedia || showContent)) {
-      CavaService.registerComponent(cavaComponentId)
+  onNeedsSpectrumChanged: {
+    if (needsSpectrum) {
+      SpectrumService.registerComponent(cavaComponentId)
     } else {
-      CavaService.unregisterComponent(cavaComponentId)
+      SpectrumService.unregisterComponent(cavaComponentId)
     }
   }
 
   Component.onDestruction: {
-    CavaService.unregisterComponent(cavaComponentId)
+    SpectrumService.unregisterComponent(cavaComponentId)
   }
 
   Rectangle {
@@ -143,6 +144,9 @@ Item {
   }
 
   Component.onCompleted: {
+    if (needsSpectrum) {
+      SpectrumService.registerComponent(cavaComponentId)
+    }
     Logger.i("DynamicIsland", "Widget loaded on screen:", screenName || "EMPTY")
   }
 }

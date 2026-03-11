@@ -1,13 +1,13 @@
 # Dynamic Island
 
-Apple-style Dynamic Island plugin for Noctalia.
+Dynamic Island like plugin for Noctalia.
 
 ## Features
 
 - **Compact view**: Shows album art, track title, and audio visualizer
 - **Morphing animation**: Smoothly expands into a full media panel when clicked
 - **Media controls**: Play/pause, skip, and progress bar
-- **Audio visualizer**: Spring physics visualizer using CavaService
+- **Audio visualizer**: Spring physics visualizer using SpectrumService
 
 ## Screenshots
 

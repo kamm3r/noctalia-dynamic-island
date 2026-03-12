@@ -3,7 +3,7 @@
   "name": "Dynamic Island",
   "version": "1.0.0",
   "minNoctaliaVersion": "3.6.0",
-  "author": "noctalia",
+  "author": "kamm3r",
   "license": "MIT",
   "repository": "",
   "description": "Apple-style Dynamic Island that expands for media controls",

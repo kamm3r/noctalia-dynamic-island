@@ -6,7 +6,7 @@
   "author": "kamm3r",
   "license": "MIT",
   "repository": "",
-  "description": "Apple-style Dynamic Island that expands for media controls",
+  "description": "Dynamic Island that expands",
   "entryPoints": {
     "barWidget": "BarWidget.qml",
     "panel": "Panel.qml"

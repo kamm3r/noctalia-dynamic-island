@@ -68,7 +68,9 @@ RowLayout {
 
       for (let i = 0; i < 6; i++) {
         const val = values[sampleIndices[i]] || 0
-        const scaled = Math.max(2, Math.min(maxBarHeight, 2 + val * 30))
+        const gatedVal = val < 0.015 ? 0 : val
+        const scaled = Math.max(2, Math.min(maxBarHeight,
+            2 + Math.pow(gatedVal, 0.9) * (maxBarHeight - 2) * 1.4))
         targetHeights[i] = scaled
       }
       targetHeights = targetHeights.slice()

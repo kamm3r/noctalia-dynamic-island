@@ -2,14 +2,17 @@
   "id": "dynamic-island",
   "name": "Dynamic Island",
   "version": "1.0.0",
-  "minNoctaliaVersion": "3.6.0",
-  "author": "kamm3r",
+  "minNoctaliaVersion": "4.4.1",
+  "author": "noctalia",
   "license": "MIT",
-  "repository": "",
-  "description": "Dynamic Island that expands",
+  "repository": "https://github.com/noctalia-dev/noctalia-plugins",
+  "description": "Apple-style Dynamic Island that expands for media controls",
+  "tags": ["Bar", "Panel", "Media"],
   "entryPoints": {
+    "main": "Main.qml",
     "barWidget": "BarWidget.qml",
-    "panel": "Panel.qml"
+    "panel": "Panel.qml",
+    "settings": "Settings.qml"
   },
   "dependencies": {
     "plugins": []

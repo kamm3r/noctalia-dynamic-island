@@ -1,7 +1,33 @@
 {
-  "settings.title": "Dynamic Island Settings",
-  "settings.compact-width": "Island Width",
-  "settings.clear-delay": "Clear Delay",
-  "settings.scroll-title": "Scroll Title",
-  "settings.show-visualizer": "Show Visualizer"
+  "widget": {
+    "tooltip": "Dynamic Island"
+  },
+  "menu": {
+    "settings": "Widget settings"
+  },
+  "settings": {
+    "title": {
+      "label": "Dynamic Island Settings"
+    },
+    "compactWidth": {
+      "label": "Island Width",
+      "desc": "Width of the compact island widget in the bar"
+    },
+    "clearDelay": {
+      "label": "Clear Delay",
+      "desc": "Time before hiding the island when media stops (in milliseconds)"
+    },
+    "scrollTitle": {
+      "label": "Scroll Title",
+      "desc": "Enable scrolling for long track titles"
+    },
+    "showVisualizer": {
+      "label": "Show Visualizer",
+      "desc": "Display audio visualizer bars when playing"
+    }
+  },
+  "panel": {
+    "unknown-title": "Unknown Track",
+    "unknown-artist": "Unknown Artist"
+  }
 }

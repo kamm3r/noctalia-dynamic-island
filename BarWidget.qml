@@ -10,10 +10,21 @@ import "Components"
 Item {
   id: root
 
+  // Injected properties
   property var pluginApi: null
   property ShellScreen screen
   property string widgetId: ""
   property string section: ""
+  property int sectionWidgetIndex: -1
+  property int sectionWidgetsCount: 0
+
+  // Settings access pattern — always use this fallback chain
+  property var cfg: pluginApi?.pluginSettings || ({})
+  property var defaults: pluginApi?.manifest?.metadata?.defaultSettings || ({})
+  property real compactWidthVal: cfg.compactWidth ?? defaults.compactWidth ?? 180
+  property int clearDelayVal: cfg.clearDelay ?? defaults.clearDelay ?? 3000
+  property bool scrollTitleVal: cfg.scrollTitle ?? defaults.scrollTitle ?? true
+  property bool showVisualizerVal: cfg.showVisualizer ?? defaults.showVisualizer ?? true
 
   readonly property string screenName: screen?.name ?? ""
   readonly property string barPosition: Settings.getBarPositionForScreen(screenName)
@@ -21,15 +32,9 @@ Item {
   readonly property real capsuleHeight: Style.getCapsuleHeightForScreen(screenName)
   readonly property real barFontSize: Style.getBarFontSizeForScreen(screenName)
 
-  readonly property var settings: pluginApi?.pluginSettings ?? {}
-  readonly property real compactWidth: settings.compactWidth ?? 180
-  readonly property int clearDelay: settings.clearDelay ?? 3000
-  readonly property bool scrollTitle: settings.scrollTitle ?? true
-  readonly property bool showVisualizer: settings.showVisualizer ?? true
-
   readonly property bool hasMedia: MediaService.currentPlayer !== null
   readonly property bool isPlaying: MediaService.isPlaying
-  readonly property bool needsSpectrum: root.showVisualizer && root.isPlaying
+  readonly property bool needsSpectrum: root.showVisualizerVal && root.isPlaying
 
   property bool showContent: true
 
@@ -37,7 +42,7 @@ Item {
 
   readonly property string cavaComponentId: "dynamic-island:" + screenName
 
-  implicitWidth: compactWidth
+  implicitWidth: compactWidthVal
   implicitHeight: capsuleHeight
 
   visible: true
@@ -57,7 +62,7 @@ Item {
 
   Timer {
     id: clearDelayTimer
-    interval: root.clearDelay
+    interval: root.clearDelayVal
     repeat: false
     onTriggered: {
       showContent = false
@@ -76,7 +81,22 @@ Item {
     SpectrumService.unregisterComponent(cavaComponentId)
   }
 
-  Rectangle {
+  // Context menu (right-click)
+  NPopupContextMenu {
+    id: contextMenu
+    model: [
+      { "label": pluginApi?.tr("menu.settings"), "action": "settings", "icon": "settings" }
+    ]
+    onTriggered: action => {
+      contextMenu.close();
+      PanelService.closeContextMenu(screen);
+      if (action === "settings") {
+        BarService.openPluginSettings(screen, pluginApi.manifest);
+      }
+    }
+  }
+
+  NBox {
     id: visualCapsule
     width: root.implicitWidth
     height: root.implicitHeight
@@ -105,8 +125,8 @@ Item {
     MediaCompact {
       screen: root.screen
       barFontSize: root.barFontSize
-      showVisualizer: root.showVisualizer && root.isPlaying
-      scrollTitle: root.scrollTitle
+      showVisualizer: root.showVisualizerVal && root.isPlaying
+      scrollTitle: root.scrollTitleVal
       hasMedia: root.hasMedia || root.showContent
       isPlaying: root.isPlaying
     }
@@ -117,15 +137,22 @@ Item {
     anchors.fill: parent
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
 
     onPressed: {
-      root.scale = 0.97
+      if (mouse.button === Qt.LeftButton) {
+        root.scale = 0.97
+      }
     }
     onReleased: {
       root.scale = 1.0
     }
-    onClicked: {
-      pluginApi?.openPanel(root.screen, root)
+    onClicked: mouse => {
+      if (mouse.button === Qt.LeftButton) {
+        pluginApi?.openPanel(root.screen, root)
+      } else if (mouse.button === Qt.RightButton) {
+        PanelService.showContextMenu(contextMenu, root, screen);
+      }
     }
   }
 

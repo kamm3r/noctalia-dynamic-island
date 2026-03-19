@@ -23,9 +23,9 @@ Item {
   RowLayout {
     anchors.centerIn: parent
     width: parent.width
-    spacing: 8
+    spacing: Style.marginS
 
-    Rectangle {
+    NBox {
       id: albumArt
       Layout.preferredWidth: root.artSize
       Layout.preferredHeight: root.artSize
@@ -34,14 +34,13 @@ Item {
       color: Color.mSurfaceVariant
       clip: true
 
-      NImageRounded {
-        anchors.fill: parent
-        visible: MediaService.trackArtUrl !== ""
-        imagePath: MediaService.trackArtUrl
-        radius: parent.radius
-        borderWidth: 0
-        imageFillMode: Image.PreserveAspectCrop
-      }
+        NImageRounded {
+          anchors.fill: parent
+          visible: MediaService.trackArtUrl !== ""
+          imagePath: MediaService.trackArtUrl
+          radius: parent.radius
+          imageFillMode: Image.PreserveAspectCrop
+        }
     }
 
     Item {
@@ -50,31 +49,31 @@ Item {
       Layout.alignment: Qt.AlignVCenter
       clip: true
 
-      NScrollText {
-        id: scrollTitle
-        anchors.verticalCenter: parent.verticalCenter
-        width: parent.width
-        height: parent.height
+        NScrollText {
+          id: scrollTitle
+          anchors.verticalCenter: parent.verticalCenter
+          width: parent.width
+          height: parent.height
 
-        text: MediaService.trackTitle || "Unknown"
-        scrollMode: root.scrollTitle ? NScrollText.ScrollMode.Always : NScrollText.ScrollMode.Never
-        maxWidth: width
-        gradientColor: Color.mSurface
-        gradientWidth: 6
-        waitBeforeScrolling: 2000
-        scrollCycleDuration: Math.max(20000, text.length * 300)
+          text: MediaService.trackTitle || "Unknown"
+          scrollMode: root.scrollTitle ? NScrollText.ScrollMode.Always : NScrollText.ScrollMode.Never
+          maxWidth: width
+          gradientColor: Color.mSurface
+          gradientWidth: 6
+          waitBeforeScrolling: 2000
+          scrollCycleDuration: Math.max(20000, text.length * 300)
 
-        NText {
-          color: Color.mOnSurface
-          pointSize: root.barFontSize
-          font.weight: Font.Medium
-          elide: Text.ElideNone
+          Text {
+            color: Color.mOnSurface
+            font.pointSize: root.barFontSize
+            font.weight: Font.Medium
+            elide: Text.ElideNone
 
-          Behavior on x {
-            NumberAnimation { duration: parent.scrollCycleDuration; easing.type: Easing.Linear }
+            Behavior on x {
+              NumberAnimation { duration: parent.scrollCycleDuration; easing.type: Easing.Linear }
+            }
           }
         }
-      }
     }
 
     Item {

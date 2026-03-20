@@ -3,10 +3,10 @@
   "name": "Dynamic Island",
   "version": "1.0.0",
   "minNoctaliaVersion": "4.4.1",
-  "author": "noctalia",
+  "author": "kamm3r",
   "license": "MIT",
   "repository": "https://github.com/noctalia-dev/noctalia-plugins",
-  "description": "Apple-style Dynamic Island that expands for media controls",
+  "description": "Dynamic Island like plugin for Noctalia.",
   "tags": ["Bar", "Panel", "Media"],
   "entryPoints": {
     "main": "Main.qml",

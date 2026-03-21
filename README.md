@@ -23,7 +23,7 @@ Dynamic Island like plugin for Noctalia.
 
 Click the compact island in the bar to expand the full media panel with playback controls, progress bar, and album art.
 
-Right-click the widget to access settings.
+Right-click the widget to access settings __broken__.
 
 ## CLI Commands
 
